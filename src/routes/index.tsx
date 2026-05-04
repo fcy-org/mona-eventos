@@ -9,16 +9,21 @@ import {
   LayoutGrid,
   Check,
   X,
-  Quote,
+  MapPin,
 } from "lucide-react";
 import heroImg from "@/assets/hero-event.jpg";
 import celebrationsImg from "@/assets/LP2S.png";
 import corporateImg from "@/assets/LP3S.png";
 import gastronomyImg from "@/assets/LP1S.png";
 import monaLogo from "@/assets/mona-logo.png";
-import occasionCelebrationsImg from "@/assets/occasion-celebrations.jpg";
 import occasionCorporateImg from "@/assets/corporativo.png";
 import occasionGastronomyImg from "@/assets/xp gratronomico.png";
+import mockupAuditorio   from "@/assets/mockup-auditorio.jpeg";
+import mockupEscolar     from "@/assets/mockup-escolar.jpeg";
+import mockupFormatoU    from "@/assets/mockup-formato-u.jpeg";
+import mockupBanquete    from "@/assets/mockup-banquete-grande.jpeg";
+import mockupStands      from "@/assets/mockup-stands.jpeg";
+import mockupEspinha     from "@/assets/mockup-espinha.jpeg";
 import { Quiz } from "@/components/Quiz";
 import { StickyCTA } from "@/components/StickyCTA";
 import {
@@ -62,6 +67,7 @@ function Index() {
       <Header onCTA={open} />
       <Hero onCTA={open} />
       <Occasions />
+      <Spaces onCTA={open} />
       <Comparison />
       <EventGallery />
       <FinalCTA onCTA={open} />
@@ -310,7 +316,7 @@ function EventGallery() {
     {
       img: gastronomyImg,
       title: "Banquetes",
-      description: "Encuentros gourmets",
+      description: "Jantares e experiências gastronômicas",
     },
   ];
 
@@ -367,27 +373,109 @@ function EventGallery() {
   );
 }
 
+/* ----------------------------- SPACES ------------------------------ */
+function Spaces({ onCTA }: { onCTA: () => void }) {
+  const configs = [
+    { label: "Auditório",         desc: "Cadeiras em fileiras voltadas ao palco", cap: "até 120 pessoas", img: mockupAuditorio   },
+    { label: "Escolar",           desc: "Mesas com cadeiras em fileiras",          cap: "até 80 pessoas",  img: mockupEscolar     },
+    { label: 'Formato "U"',       desc: "Mesas em U para debate e interação",      cap: "até 40 pessoas",  img: mockupFormatoU    },
+    { label: "Banquete",          desc: "Mesas redondas com serviço completo",     cap: "até 150 pessoas", img: mockupBanquete    },
+    { label: "Coquetel & Stands", desc: "Espaço aberto com expositores",           cap: "até 200 pessoas", img: mockupStands      },
+    { label: "Espinha de Peixe",  desc: "Mesas inclinadas, melhor visibilidade",   cap: "até 60 pessoas",  img: mockupEspinha     },
+  ];
+
+  return (
+    <section className="bg-secondary py-24 sm:py-32">
+      <div className="mx-auto max-w-7xl px-6 sm:px-10">
+        <div className="max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.3em] text-accent">Nossos espaços</p>
+          <h2 className="mt-4 font-display text-balance text-4xl text-foreground sm:text-5xl">
+            Um espaço que se adapta ao seu evento.
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground max-w-lg">
+            6 configurações de sala, do auditório corporativo ao banquete de casamento. Veja como o Monã tomaria a forma do <em>seu</em> evento.
+          </p>
+        </div>
+
+        <div className="mt-14">
+          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+            <CarouselContent className="-ml-4">
+              {configs.map((c, i) => (
+                <CarouselItem key={i} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                  <article className="group overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-elegant">
+                    <div className="relative overflow-hidden h-56">
+                      <img
+                        src={c.img}
+                        alt={`Configuração ${c.label}`}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                      <div className="absolute bottom-0 left-0 p-4">
+                        <span className="text-[9px] uppercase tracking-[0.3em] text-accent">Configuração</span>
+                        <h3 className="mt-1 font-display text-xl text-white">{c.label}</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">{c.desc}</p>
+                      <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                        <Users className="h-3.5 w-3.5 text-accent" />
+                        <span className="text-xs font-medium text-accent whitespace-nowrap">{c.cap}</span>
+                      </div>
+                    </div>
+                  </article>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute -left-12 top-1/2 -translate-y-1/2 hidden lg:flex" />
+            <CarouselNext className="absolute -right-12 top-1/2 -translate-y-1/2 hidden lg:flex" />
+          </Carousel>
+          <p className="mt-6 text-center text-sm text-muted-foreground lg:hidden">Deslize para ver todas as configurações</p>
+        </div>
+
+        <div className="mt-12 flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-muted-foreground">Quer ver ao vivo como ficaria o seu evento?</p>
+          <button
+            onClick={onCTA}
+            className="group inline-flex items-center gap-2 rounded-md border border-accent/35 bg-background px-6 py-3 text-sm font-medium text-foreground transition hover:bg-accent hover:text-accent-foreground hover:border-accent"
+          >
+            <MapPin className="h-4 w-4" />
+            Fazer diagnóstico e agendar visita
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ----------------------------- FINAL CTA --------------------------- */
 function FinalCTA({ onCTA }: { onCTA: () => void }) {
   return (
     <section className="relative overflow-hidden bg-primary py-24 text-primary-foreground sm:py-32">
       <div className="absolute inset-0 gradient-radial-warm opacity-60" />
       <div className="relative mx-auto max-w-3xl px-6 text-center sm:px-10">
-        <p className="text-xs uppercase tracking-[0.3em] text-accent">Vamos conversar</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-accent">Pronto para conhecer?</p>
         <h2 className="mt-4 font-display text-balance text-4xl text-cream sm:text-6xl">
-          Descubra o que o Monã pode fazer pelo seu evento.
+          O seu evento começa com uma visita.
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-pretty text-base text-cream/80">
-          Em menos de 2 minutos você recebe um diagnóstico personalizado com disponibilidade,
-          formato e investimento estimado.
+          Agende uma visita guiada de 30 minutos e saia com proposta personalizada,
+          configuração do espaço e data confirmada em mãos — sem compromisso.
         </p>
-        <button
-          onClick={onCTA}
-          className="group mt-10 inline-flex items-center gap-2 rounded-md bg-accent px-8 py-4 text-sm font-medium text-accent-foreground shadow-gold transition-all hover:scale-[1.02] hover:bg-accent/90"
-        >
-          Fazer meu diagnóstico gratuito
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </button>
+        <div className="mt-10 flex flex-col items-center gap-4">
+          <button
+            onClick={onCTA}
+            className="group inline-flex items-center gap-2 rounded-md bg-accent px-8 py-4 text-sm font-medium text-accent-foreground shadow-gold transition-all hover:scale-[1.02] hover:bg-accent/90"
+          >
+            <MapPin className="h-4 w-4" />
+            Quero agendar minha visita
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </button>
+          <p className="text-xs text-cream/50">
+            ✦ 9 em cada 10 clientes fecham contrato após a visita guiada
+          </p>
+        </div>
       </div>
     </section>
   );

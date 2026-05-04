@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -159,5 +160,170 @@
   }
 }
 
-/* Premium serif via Google Fonts */
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* ─── Quiz dark modal ───────────────────────────────────────────────────────── */
+
+.quiz-modal {
+  background: oklch(0.13 0.022 155);
+  border: 1px solid oklch(1 0 0 / 7%);
+}
+
+/* Aurora animated glow blobs */
+.quiz-aurora {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.quiz-aurora::before,
+.quiz-aurora::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+}
+.quiz-aurora::before {
+  width: 500px;
+  height: 500px;
+  top: -160px;
+  right: -120px;
+  background: radial-gradient(circle, color-mix(in oklab, var(--gold) 18%, transparent), transparent 70%);
+  animation: aurora 9s ease-in-out infinite;
+}
+.quiz-aurora::after {
+  width: 350px;
+  height: 350px;
+  bottom: -100px;
+  left: -80px;
+  background: radial-gradient(circle, color-mix(in oklab, oklch(0.35 0.08 155) 60%, transparent), transparent 70%);
+  animation: aurora 11s ease-in-out infinite reverse;
+  animation-delay: -4s;
+}
+
+/* Progress bar shimmer */
+.quiz-progress-bar {
+  background: linear-gradient(90deg,
+    var(--gold) 0%,
+    oklch(0.88 0.13 78) 40%,
+    var(--gold) 60%,
+    oklch(0.72 0.09 72) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerBar 2.5s linear infinite;
+}
+
+/* Primary button */
+.quiz-btn-primary {
+  background: linear-gradient(135deg, oklch(0.80 0.10 76), oklch(0.68 0.09 72));
+  color: oklch(0.13 0.022 155);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 24px -6px color-mix(in oklab, var(--gold) 45%, transparent);
+}
+.quiz-btn-primary:hover:not(:disabled) {
+  transform: scale(1.025);
+  box-shadow: 0 6px 32px -6px color-mix(in oklab, var(--gold) 60%, transparent);
+}
+.quiz-btn-primary:active:not(:disabled) { transform: scale(0.985); }
+
+/* Step enter animations */
+.quiz-step-forward {
+  animation: quizSlideForward 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.quiz-step-back {
+  animation: quizSlideBack 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Staggered card entrance */
+.quiz-card {
+  animation: quizFadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--ci, 0) * 55ms);
+}
+
+/* Selected card glow */
+.quiz-card-active {
+  border-color: var(--gold) !important;
+  background: color-mix(in oklab, var(--gold) 10%, transparent) !important;
+  box-shadow: 0 0 0 1px var(--gold), 0 0 24px -6px color-mix(in oklab, var(--gold) 30%, transparent);
+}
+
+/* Dark inputs */
+.quiz-input {
+  width: 100%;
+  background: oklch(1 0 0 / 5%);
+  border: 1px solid oklch(1 0 0 / 12%);
+  border-radius: 0.5rem;
+  color: white;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.quiz-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--gold) 22%, transparent);
+}
+.quiz-input::placeholder { color: oklch(1 0 0 / 28%); }
+.quiz-input option { background: oklch(0.18 0.025 155); color: white; }
+.quiz-input::-webkit-calendar-picker-indicator { filter: invert(0.6) sepia(1) hue-rotate(10deg); }
+
+/* Chips */
+.quiz-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.45rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid oklch(1 0 0 / 12%);
+  background: oklch(1 0 0 / 4%);
+  color: oklch(1 0 0 / 55%);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
+}
+.quiz-chip:hover  { border-color: var(--gold); color: white; background: oklch(1 0 0 / 8%); }
+.quiz-chip.active { border-color: var(--gold); background: color-mix(in oklab, var(--gold) 16%, transparent); color: var(--gold); }
+
+/* Mockup reveal */
+.quiz-mockup-reveal {
+  animation: mockupReveal 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Keyframes ─────────────────────────────────────────────────────────────── */
+
+@keyframes aurora {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  33%       { transform: translate(25px, -20px) scale(1.08); opacity: 0.7; }
+  66%       { transform: translate(-15px, 12px) scale(0.94); opacity: 0.4; }
+}
+
+@keyframes shimmerBar {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@keyframes quizSlideForward {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes quizSlideBack {
+  from { opacity: 0; transform: translateX(-30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes quizFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mockupReveal {
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
