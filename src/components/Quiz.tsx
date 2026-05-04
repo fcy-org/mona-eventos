@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import {
   ArrowLeft, ArrowRight, Check, X, MessageCircle, MapPin,
   Sparkles, Utensils, Monitor, BedDouble, Building2, Heart,
@@ -12,6 +12,16 @@ import mockupFormatoU   from "@/assets/mockup-formato-u.jpeg";
 import mockupBanquete   from "@/assets/mockup-banquete-grande.jpeg";
 import mockupStands     from "@/assets/mockup-stands.jpeg";
 import mockupEspinha    from "@/assets/mockup-espinha.jpeg";
+
+/* ─── meta pixel ─────────────────────────────────────────────────────────────── */
+
+declare global {
+  interface Window { fbq?: (...args: unknown[]) => void; }
+}
+
+function trackMeta(event: string, params?: Record<string, unknown>) {
+  window.fbq?.("trackCustom", event, params);
+}
 
 /* ─── constants ─────────────────────────────────────────────────────────────── */
 
@@ -261,6 +271,11 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
   const [submitted, setSubmitted] = useState(false);
   const [sending,   setSending]   = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    trackMeta(`etapa_${step + 1}`, { etapa: step + 1, nome_etapa: STEP_LABELS[step] });
+  }, [open, step]);
+
   if (!open) return null;
 
   const progress = submitted ? 100 : (step / TOTAL_STEPS) * 100;
@@ -309,6 +324,8 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
     await sendLead(answers);
     setSending(false);
     setSubmitted(true);
+    window.fbq?.("track", "Lead", { content_name: "Quiz Diagnóstico Monã", content_category: answers.occasion ?? "" });
+    trackMeta("quiz_concluido", { occasion: answers.occasion, event_type: answers.eventType, pax: answers.pax });
   };
 
   return (
