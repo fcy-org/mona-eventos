@@ -209,7 +209,7 @@ function buildWaMessage(a: Answers) {
     ? `\n• Hospedagem: ${formatAccommodation(a)}`
     : "";
 
-  return `Olá! Sou ${name}, acabei de preencher o diagnóstico no site do Monã.
+  return `Olá! Sou ${name}, acabei de preencher o formulário no site do Monã e gostaria de agendar uma visita guiada.
 
 📋 *Resumo do meu evento:*
 • Tipo: ${a.eventType ?? a.occasion ?? "—"}
@@ -324,7 +324,7 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
     await sendLead(answers);
     setSending(false);
     setSubmitted(true);
-    window.fbq?.("track", "Lead", { content_name: "Quiz Diagnóstico Monã", content_category: answers.occasion ?? "" });
+    window.fbq?.("track", "Lead", { content_name: "Quiz Agendamento Visita Monã", content_category: answers.occasion ?? "" });
     trackMeta("quiz_concluido", { occasion: answers.occasion, event_type: answers.eventType, pax: answers.pax });
   };
 
@@ -337,7 +337,7 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
         <div className="relative z-10 flex items-center justify-between border-b border-white/8 px-6 py-4">
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-[var(--gold)]/70">
             <Sparkles className="h-3.5 w-3.5 text-[var(--gold)]" />
-            Diagnóstico Monã
+            Agende sua visita
           </div>
           <button onClick={close} aria-label="Fechar" className="rounded-full p-1.5 text-white/35 transition hover:bg-white/10 hover:text-white">
             <X className="h-5 w-5" />
@@ -401,7 +401,7 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
               )}
               {step === TOTAL_STEPS - 1 && (
                 <button onClick={submit} disabled={sending} className="quiz-btn-primary flex items-center gap-2 rounded-xl px-6 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                  {sending ? "Enviando…" : "Ver disponibilidade"}
+                  {sending ? "Enviando…" : "Confirmar minha visita"}
                   {!sending && <ArrowRight className="h-4 w-4" />}
                 </button>
               )}
@@ -484,7 +484,7 @@ function Step1({ answers, set, setAnswers, errors }: {
 
   return (
     <div>
-      <StepHeader step={2} title="Detalhes do evento" sub="Quanto mais detalhes, mais precisa será nossa proposta" />
+      <StepHeader step={2} title="Detalhes do evento" sub="Quanto mais detalhes, mais personalizada será sua visita guiada" />
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <DField label="Tipo de evento *" error={errors.eventType}>
@@ -739,7 +739,7 @@ function Step5({ answers, set, errors }: {
 }) {
   return (
     <div>
-      <StepHeader step={6} title="Seus dados" sub="Para enviarmos sua proposta personalizada em até 24h" />
+      <StepHeader step={6} title="Seus dados" sub="Para confirmarmos sua visita guiada e enviarmos os detalhes" />
       <div className="space-y-4">
         <DField label="Nome completo *" error={errors.nome}>
           <input className="quiz-input" placeholder="Nome e sobrenome"
@@ -790,7 +790,7 @@ function ResultStep({ answers }: { answers: Answers }) {
   const msg  = buildWaMessage(answers);
   const msgProposal = msg.replace(
     "📍 *Gostaria de agendar uma visita guiada ao espaço.*",
-    "Gostaria de receber a proposta por aqui mesmo."
+    "Antes de agendar, gostaria de tirar algumas dúvidas por aqui."
   );
 
   return (
@@ -811,7 +811,7 @@ function ResultStep({ answers }: { answers: Answers }) {
         <Check className="h-7 w-7" />
       </div>
 
-      <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--gold)]">Diagnóstico concluído</p>
+      <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--gold)]">Visita solicitada</p>
       <h3 className="mt-3 font-display text-3xl sm:text-4xl text-white leading-tight">
         {name ? `${name}, seu evento` : "Seu evento"} já tem um espaço aqui.
       </h3>
@@ -837,7 +837,7 @@ function ResultStep({ answers }: { answers: Answers }) {
           className="flex items-center gap-2 text-sm text-white/30 transition hover:text-white/60"
         >
           <MessageCircle className="h-4 w-4" />
-          Receber proposta primeiro por WhatsApp
+          Tirar dúvidas antes por WhatsApp
         </button>
       </div>
     </div>

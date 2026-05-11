@@ -47,7 +47,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Tudo integrado: do espaço ao prato na mesa do seu convidado. Faça o diagnóstico gratuito.",
+          "Tudo integrado: do espaço ao prato na mesa do seu convidado. Agende sua visita guiada ao Monã.",
       },
       { property: "og:image", content: heroImg },
       { property: "og:type", content: "website" },
@@ -99,7 +99,7 @@ function Header({ onCTA }: { onCTA: () => void }) {
           onClick={onCTA}
           className="hidden items-center gap-2 rounded-md border border-cream/25 bg-background/30 px-5 py-2.5 text-sm font-medium text-cream backdrop-blur-md transition hover:border-accent hover:bg-background/50 md:inline-flex"
         >
-          Diagnóstico gratuito
+          Agendar visita
           <ArrowRight className="h-4 w-4" />
         </button>
       </nav>
@@ -163,10 +163,10 @@ function Hero({ onCTA }: { onCTA: () => void }) {
               onClick={onCTA}
               className="group flex items-center gap-2 rounded-md bg-accent px-7 py-4 text-sm font-medium text-accent-foreground shadow-gold transition-all hover:scale-[1.02] hover:bg-accent/90 active:scale-[0.99]"
             >
-              Fazer meu diagnóstico gratuito
+              Agendar minha visita guiada
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <p className="text-xs text-cream/70">Leva menos de 2 minutos. Sem compromisso.</p>
+            <p className="text-xs text-cream/70">Preencha em 2 minutos e confirme sua visita guiada.</p>
           </div>
         </div>
       </div>
@@ -440,7 +440,7 @@ function Spaces({ onCTA }: { onCTA: () => void }) {
             className="group inline-flex items-center gap-2 rounded-md border border-accent/35 bg-background px-6 py-3 text-sm font-medium text-foreground transition hover:bg-accent hover:text-accent-foreground hover:border-accent"
           >
             <MapPin className="h-4 w-4" />
-            Fazer diagnóstico e agendar visita
+            Agendar minha visita guiada
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </button>
         </div>
