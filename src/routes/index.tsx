@@ -49,10 +49,10 @@ export const Route = createFileRoute("/")({
         content:
           "Tudo integrado: do espaço ao prato na mesa do seu convidado. Agende sua visita guiada ao Monã.",
       },
-      { property: "og:image", content: heroImg },
+      { property: "og:image", content: `${import.meta.env.VITE_SITE_URL ?? ""}${heroImg}` },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: heroImg },
+      { name: "twitter:image", content: `${import.meta.env.VITE_SITE_URL ?? ""}${heroImg}` },
     ],
   }),
   component: Index,

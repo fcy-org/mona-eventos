@@ -2,7 +2,7 @@ import { useState, useEffect, type ReactNode } from "react";
 import {
   ArrowLeft, ArrowRight, Check, X, MessageCircle, MapPin,
   Sparkles, Utensils, Monitor, BedDouble, Building2, Heart,
-  GraduationCap, Mic2, Cake, Star, Users,
+  GraduationCap, Mic2, Cake, Star, Users, TrendingUp, Calendar, Clock,
 } from "lucide-react";
 import { z } from "zod";
 
@@ -29,8 +29,8 @@ const SHEETS_URL =
   (import.meta.env.VITE_SHEETS_URL as string | undefined) ??
   "https://script.google.com/macros/s/AKfycbwF1ieY6H5AnsiEaNPPnBiG4BXegarNFZiJQKgv8i3UnbHnZDTKVtrhrG4jDoDxpmyOXA/exec";
 
-const WA_NUMBER = "5586922221001";
-const TOTAL_STEPS = 6;
+const WA_NUMBER = (import.meta.env.VITE_WA_NUMBER as string | undefined) ?? "5586922221001";
+const TOTAL_STEPS = 8;
 
 const OCCASIONS = [
   { id: "Casamento",   label: "Casamento & Social",  desc: "Cerimônias e celebrações",       Icon: Heart         },
@@ -85,7 +85,28 @@ const BR_STATES = [
 
 const DURATIONS = ["1 dia","2 dias","3 dias","4 dias","5 dias","6 dias","7 dias"];
 
-const STEP_LABELS = ["Ocasião","Evento","Espaço","Infraestrutura","Hospedagem","Seus Dados"];
+const STEP_LABELS = ["Ocasião","Evento","Espaço","Infra","Hospedagem","Investimento","Visita","Dados"];
+
+const INVESTMENT_RANGES = [
+  { id: "ate-15k",    label: "Até R$ 15.000",          desc: "Reuniões e eventos compactos"   },
+  { id: "15k-40k",    label: "R$ 15.000 – R$ 40.000",  desc: "Eventos de pequeno porte"        },
+  { id: "40k-80k",    label: "R$ 40.000 – R$ 80.000",  desc: "Eventos de médio porte"          },
+  { id: "80k-150k",   label: "R$ 80.000 – R$ 150.000", desc: "Grandes eventos e celebrações"   },
+  { id: "acima-150k", label: "Acima de R$ 150.000",    desc: "Eventos premium e corporativos"  },
+];
+
+const VISIT_WEEKS = [
+  { id: "esta-semana",    label: "Esta semana"    },
+  { id: "proxima-semana", label: "Próxima semana" },
+  { id: "2-semanas",      label: "Em 2 semanas"   },
+  { id: "1-mes",          label: "No próximo mês" },
+];
+
+const VISIT_TIMES = [
+  { id: "manha",    label: "Manhã",            desc: "9h às 12h"               },
+  { id: "tarde",    label: "Tarde",            desc: "13h às 17h"              },
+  { id: "qualquer", label: "Qualquer horário", desc: "Me liguem para combinar" },
+];
 
 type RoomKey = "qtdPremiumTwin" | "qtdPremiumCasalPCD" | "qtdPremiumCasal" | "qtdSuitePrivilege" | "qtdSuitePresidencial";
 
@@ -117,6 +138,9 @@ type Answers = {
   qtdSuitePresidencial?: string;
   checkin?: string;
   checkout?: string;
+  investmentRange?: string;
+  visitWeek?: string;
+  visitTime?: string;
   nome?: string;
   cpfCnpj?: string;
   email?: string;
@@ -151,14 +175,13 @@ function maskPhone(v: string) {
 function maskCpfCnpj(v: string) {
   const d = v.replace(/\D/g, "").slice(0, 14);
   if (d.length <= 11) {
+    // CPF: 000.000.000-00
     if (d.length <= 3) return d;
     if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`;
     if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
     return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
   }
-  if (d.length <= 2)  return d;
-  if (d.length <= 5)  return `${d.slice(0,2)}.${d.slice(2)}`;
-  if (d.length <= 8)  return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`;
+  // CNPJ: 00.000.000/0000-00
   if (d.length <= 12) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8)}`;
   return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`;
 }
@@ -177,7 +200,7 @@ function formatAccommodation(a: Answers): string {
   return `${roomStr} (check-in: ${a.checkin ?? "—"} / check-out: ${a.checkout ?? "—"})`;
 }
 
-async function sendLead(a: Answers) {
+async function sendLead(a: Answers): Promise<boolean> {
   const payload = {
     nome:        a.nome        ?? "",
     cpf_cnpj:    a.cpfCnpj    ?? "",
@@ -193,20 +216,32 @@ async function sendLead(a: Answers) {
     montagem:    a.roomConfig  ?? "",
     equipamentos:(a.equipment  ?? []).join(", "),
     alimentacao: (a.foodBev    ?? []).join(", "),
-    hospedagem:  a.needsAccommodation ? formatAccommodation(a) : "Não",
+    hospedagem:        a.needsAccommodation ? formatAccommodation(a) : "Não",
+    faixa_investimento: a.investmentRange ?? "Não informado",
+    preferencia_visita: a.visitWeek && a.visitTime
+      ? `${a.visitWeek} – ${VISIT_TIMES.find(t => t.id === a.visitTime)?.label ?? a.visitTime}`
+      : "Não informado",
     ...getUtms(),
   };
   try {
     await fetch(SHEETS_URL, { method: "POST", body: JSON.stringify(payload), mode: "no-cors" });
-  } catch { /* silent */ }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function buildWaMessage(a: Answers) {
-  const name  = a.nome ?? "";
-  const equip = a.equipment?.length ? `\n• Equipamentos: ${a.equipment.join(", ")}` : "";
-  const food  = a.foodBev?.length   ? `\n• Alimentação: ${a.foodBev.join(", ")}`    : "";
-  const hotel = a.needsAccommodation
-    ? `\n• Hospedagem: ${formatAccommodation(a)}`
+  const name       = a.nome ?? "";
+  const equip      = a.equipment?.length ? `\n• Equipamentos: ${a.equipment.join(", ")}` : "";
+  const food       = a.foodBev?.length   ? `\n• Alimentação: ${a.foodBev.join(", ")}`    : "";
+  const hotel      = a.needsAccommodation ? `\n• Hospedagem: ${formatAccommodation(a)}` : "";
+  const investment = a.investmentRange
+    ? `\n• Faixa de investimento: ${INVESTMENT_RANGES.find(r => r.id === a.investmentRange)?.label ?? a.investmentRange}`
+    : "";
+  const visitTime  = VISIT_TIMES.find(t => t.id === a.visitTime);
+  const visitBlock = a.visitWeek
+    ? `\n\n📅 *Minha disponibilidade para a visita guiada:*\n• Quando: ${a.visitWeek}\n• Período: ${visitTime ? `${visitTime.label} (${visitTime.desc})` : "—"}`
     : "";
 
   return `Olá! Sou ${name}, acabei de preencher o formulário no site do Monã e gostaria de agendar uma visita guiada.
@@ -216,9 +251,9 @@ function buildWaMessage(a: Answers) {
 • Configuração: ${a.roomConfig ?? "—"}
 • Participantes: ${a.pax ?? "—"} pessoas
 • Data prevista: ${a.eventDate ?? "a definir"}
-• Duração: ${a.duration ?? "—"}${equip}${food}${hotel}
+• Duração: ${a.duration ?? "—"}${equip}${food}${hotel}${investment}${visitBlock}
 
-📍 *Gostaria de agendar uma visita guiada ao espaço.*
+📍 *Aguardo contato para confirmar a visita!*
 
 *Meus dados:*
 • CPF/CNPJ: ${a.cpfCnpj ?? "—"}
@@ -249,12 +284,50 @@ function validateStep(step: number, a: Answers): Record<string, string> {
       if (!a.checkout) e.checkout = "Informe a data de check-out";
     }
   }
+  if (step === 5) {
+    if (!a.investmentRange) e.investmentRange = "Selecione a faixa de investimento para continuar";
+  }
+  if (step === 6) {
+    if (!a.visitWeek) e.visitWeek = "Selecione sua disponibilidade";
+    if (!a.visitTime) e.visitTime = "Selecione o período preferido";
+  }
   return e;
+}
+
+function isValidCpf(value: string): boolean {
+  const d = value.replace(/\D/g, "");
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+  const calc = (len: number) => {
+    let sum = 0;
+    for (let i = 0; i < len; i++) sum += +d[i] * (len + 1 - i);
+    const r = (sum * 10) % 11;
+    return r >= 10 ? 0 : r;
+  };
+  return calc(9) === +d[9] && calc(10) === +d[10];
+}
+
+function isValidCnpj(value: string): boolean {
+  const d = value.replace(/\D/g, "");
+  if (d.length !== 14 || /^(\d)\1{13}$/.test(d)) return false;
+  const calc = (weights: number[]) => {
+    const sum = weights.reduce((acc, w, i) => acc + +d[i] * w, 0);
+    const r = sum % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  return (
+    calc([5,4,3,2,9,8,7,6,5,4,3,2]) === +d[12] &&
+    calc([6,5,4,3,2,9,8,7,6,5,4,3,2]) === +d[13]
+  );
 }
 
 const contactSchema = z.object({
   nome:     z.string().trim().min(4, "Informe nome e sobrenome"),
-  cpfCnpj:  z.string().trim().min(11, "CPF/CNPJ inválido"),
+  cpfCnpj:  z.string().trim().refine(v => {
+    const d = v.replace(/\D/g, "");
+    if (d.length === 11) return isValidCpf(v);
+    if (d.length === 14) return isValidCnpj(v);
+    return false;
+  }, "CPF/CNPJ inválido"),
   email:    z.string().trim().email("E-mail inválido"),
   whatsapp: z.string().trim().min(10, "WhatsApp inválido"),
   state:    z.string().min(2, "Selecione o estado"),
@@ -270,6 +343,7 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
   const [errors,    setErrors]    = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [sending,   setSending]   = useState(false);
+  const [sendError, setSendError] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -282,7 +356,7 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
 
   const close = () => {
     onClose();
-    setTimeout(() => { setStep(0); setDir("fwd"); setAnswers({}); setErrors({}); setSubmitted(false); }, 300);
+    setTimeout(() => { setStep(0); setDir("fwd"); setAnswers({}); setErrors({}); setSubmitted(false); setSendError(false); }, 300);
   };
 
   const advanceStep = () => { setDir("fwd"); setStep(s => Math.min(s + 1, TOTAL_STEPS - 1)); };
@@ -321,8 +395,10 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
     }
     setErrors({});
     setSending(true);
-    await sendLead(answers);
+    setSendError(false);
+    const ok = await sendLead(answers);
     setSending(false);
+    if (!ok) { setSendError(true); return; }
     setSubmitted(true);
     window.fbq?.("track", "Lead", { content_name: "Quiz Agendamento Visita Monã", content_category: answers.occasion ?? "" });
     trackMeta("quiz_concluido", { occasion: answers.occasion, event_type: answers.eventType, pax: answers.pax });
@@ -378,7 +454,9 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
               {step === 2 && <Step2 answers={answers} set={set} errors={errors} />}
               {step === 3 && <Step3 answers={answers} toggle={toggle} />}
               {step === 4 && <Step4 answers={answers} set={set} errors={errors} />}
-              {step === 5 && <Step5 answers={answers} set={set} errors={errors} />}
+              {step === 5 && <Step5Investment answers={answers} set={set} errors={errors} />}
+              {step === 6 && <Step6Visit answers={answers} set={set} errors={errors} />}
+              {step === 7 && <Step7Contact answers={answers} set={set} errors={errors} />}
             </div>
           )}
           {submitted && <ResultStep answers={answers} />}
@@ -386,25 +464,32 @@ export function Quiz({ open, onClose }: { open: boolean; onClose: () => void }) 
 
         {/* Footer */}
         {!submitted && (
-          <div className="relative z-10 flex items-center justify-between border-t border-white/8 px-6 py-4">
-            <button
-              onClick={back}
-              className={`flex items-center gap-1.5 text-sm text-white/35 transition hover:text-white/70 ${step === 0 ? "invisible" : ""}`}
-            >
-              <ArrowLeft className="h-4 w-4" /> Voltar
-            </button>
-            <div className="flex items-center gap-3">
-              {step < TOTAL_STEPS - 1 && (
-                <button onClick={goNext} className="quiz-btn-primary flex items-center gap-2 rounded-xl px-6 py-3 text-sm">
-                  Continuar <ArrowRight className="h-4 w-4" />
-                </button>
-              )}
-              {step === TOTAL_STEPS - 1 && (
-                <button onClick={submit} disabled={sending} className="quiz-btn-primary flex items-center gap-2 rounded-xl px-6 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                  {sending ? "Enviando…" : "Confirmar minha visita"}
-                  {!sending && <ArrowRight className="h-4 w-4" />}
-                </button>
-              )}
+          <div className="relative z-10 border-t border-white/8 px-6 py-4">
+            {sendError && (
+              <p className="mb-3 text-center text-xs text-red-400">
+                Falha de conexão. Verifique sua internet e tente novamente.
+              </p>
+            )}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={back}
+                className={`flex items-center gap-1.5 text-sm text-white/35 transition hover:text-white/70 ${step === 0 ? "invisible" : ""}`}
+              >
+                <ArrowLeft className="h-4 w-4" /> Voltar
+              </button>
+              <div className="flex items-center gap-3">
+                {step < TOTAL_STEPS - 1 && (
+                  <button onClick={goNext} className="quiz-btn-primary flex items-center gap-2 rounded-xl px-6 py-3 text-sm">
+                    Continuar <ArrowRight className="h-4 w-4" />
+                  </button>
+                )}
+                {step === TOTAL_STEPS - 1 && (
+                  <button onClick={submit} disabled={sending} className="quiz-btn-primary flex items-center gap-2 rounded-xl px-6 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    {sending ? "Enviando…" : "Confirmar minha visita"}
+                    {!sending && <ArrowRight className="h-4 w-4" />}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -732,14 +817,139 @@ function Step4({ answers, set, errors }: {
   );
 }
 
-function Step5({ answers, set, errors }: {
+function Step5Investment({ answers, set, errors }: {
   answers: Answers;
   set: (k: keyof Answers, v: Answers[keyof Answers]) => void;
   errors: Record<string, string>;
 }) {
   return (
     <div>
-      <StepHeader step={6} title="Seus dados" sub="Para confirmarmos sua visita guiada e enviarmos os detalhes" />
+      <StepHeader
+        step={6}
+        title="Faixa de investimento"
+        sub="Selecione a faixa que melhor representa o orçamento previsto para o evento"
+      />
+      <div className="flex flex-col gap-2.5">
+        {INVESTMENT_RANGES.map((r, i) => {
+          const active = answers.investmentRange === r.id;
+          return (
+            <button
+              key={r.id}
+              onClick={() => set("investmentRange", r.id)}
+              style={{ "--ci": i } as React.CSSProperties}
+              className={`quiz-card relative flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${
+                active ? "quiz-card-active" : "border-white/10 bg-white/4 hover:border-white/22 hover:bg-white/7"
+              }`}
+            >
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                active ? "bg-[var(--gold)]/20 text-[var(--gold)]" : "bg-white/6 text-white/35"
+              }`}>
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className={`block font-semibold text-sm leading-tight ${active ? "text-[var(--gold)]" : "text-white/85"}`}>
+                  {r.label}
+                </span>
+                <span className="mt-0.5 block text-[11px] text-white/30 leading-tight">{r.desc}</span>
+              </div>
+              {active && <Check className="h-4 w-4 shrink-0 text-[var(--gold)]" />}
+            </button>
+          );
+        })}
+      </div>
+      {errors.investmentRange && (
+        <p className="mt-4 text-center text-xs text-red-400">{errors.investmentRange}</p>
+      )}
+    </div>
+  );
+}
+
+function Step6Visit({ answers, set, errors }: {
+  answers: Answers;
+  set: (k: keyof Answers, v: Answers[keyof Answers]) => void;
+  errors: Record<string, string>;
+}) {
+  return (
+    <div>
+      <StepHeader
+        step={7}
+        title="Preferência de visita"
+        sub="Quando você tem disponibilidade para conhecer o espaço? Nossa equipe confirmará o horário exato."
+      />
+      <div className="space-y-6">
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar className="h-4 w-4 text-[var(--gold)]" />
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-white/50">Disponibilidade</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            {VISIT_WEEKS.map((w, i) => {
+              const active = answers.visitWeek === w.label;
+
+              return (
+                <button
+                  key={w.id}
+                  onClick={() => set("visitWeek", w.label)}
+                  style={{ "--ci": i } as React.CSSProperties}
+                  className={`quiz-card relative flex items-center justify-between rounded-xl border px-4 py-3.5 text-left transition-all ${
+                    active ? "quiz-card-active" : "border-white/10 bg-white/4 hover:border-white/22"
+                  }`}
+                >
+                  <span className={`text-sm font-semibold ${active ? "text-[var(--gold)]" : "text-white/80"}`}>
+                    {w.label}
+                  </span>
+                  {active && <Check className="h-3.5 w-3.5 text-[var(--gold)]" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Clock className="h-4 w-4 text-[var(--gold)]" />
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-white/50">Período preferido</span>
+          </div>
+          <div className="flex flex-col gap-2.5">
+            {VISIT_TIMES.map((t, i) => {
+              const active = answers.visitTime === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => set("visitTime", t.id)}
+                  style={{ "--ci": i } as React.CSSProperties}
+                  className={`quiz-card relative flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
+                    active ? "quiz-card-active" : "border-white/10 bg-white/4 hover:border-white/22"
+                  }`}
+                >
+                  <span className={`flex-1 text-sm font-semibold ${active ? "text-[var(--gold)]" : "text-white/80"}`}>
+                    {t.label}
+                  </span>
+                  <span className={`text-[11px] ${active ? "text-[var(--gold)]/60" : "text-white/25"}`}>{t.desc}</span>
+                  {active && <Check className="h-3.5 w-3.5 shrink-0 text-[var(--gold)]" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      {(errors.visitWeek || errors.visitTime) && (
+        <p className="mt-4 text-center text-xs text-red-400">
+          {errors.visitWeek ?? errors.visitTime}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Step7Contact({ answers, set, errors }: {
+  answers: Answers;
+  set: (k: keyof Answers, v: Answers[keyof Answers]) => void;
+  errors: Record<string, string>;
+}) {
+  return (
+    <div>
+      <StepHeader step={8} title="Seus dados" sub="Para confirmarmos sua visita guiada e enviarmos os detalhes" />
       <div className="space-y-4">
         <DField label="Nome completo *" error={errors.nome}>
           <input className="quiz-input" placeholder="Nome e sobrenome"
@@ -787,9 +997,10 @@ function Step5({ answers, set, errors }: {
 function ResultStep({ answers }: { answers: Answers }) {
   const name = answers.nome?.split(" ")[0] ?? "";
   const room = ROOM_CONFIGS.find(r => r.id === answers.roomConfig);
+  const visitTime = VISIT_TIMES.find(t => t.id === answers.visitTime);
   const msg  = buildWaMessage(answers);
   const msgProposal = msg.replace(
-    "📍 *Gostaria de agendar uma visita guiada ao espaço.*",
+    "📍 *Aguardo contato para confirmar a visita!*",
     "Antes de agendar, gostaria de tirar algumas dúvidas por aqui."
   );
 
@@ -818,6 +1029,20 @@ function ResultStep({ answers }: { answers: Answers }) {
       <p className="mx-auto mt-4 max-w-md text-sm text-white/50 leading-relaxed">
         A melhor forma de sentir o Monã é visitando ao vivo. Em <strong className="text-white/75">30 minutos</strong> você conhece o espaço e sai com proposta e data confirmadas em mãos.
       </p>
+
+      {answers.visitWeek && (
+        <div className="my-5 mx-auto max-w-sm rounded-xl border border-[var(--gold)]/20 bg-[var(--gold)]/6 px-5 py-3.5 text-left">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="h-3.5 w-3.5 text-[var(--gold)]" />
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--gold)]">Sua preferência de visita</span>
+          </div>
+          <p className="text-sm text-white/75">
+            <span className="font-semibold text-white">{answers.visitWeek}</span>
+            {visitTime && <span className="text-white/50"> · {visitTime.label} ({visitTime.desc})</span>}
+          </p>
+          <p className="mt-1 text-[11px] text-white/30">Nossa equipe entrará em contato para confirmar</p>
+        </div>
+      )}
 
       <div className="my-6 inline-flex items-center gap-2 rounded-full border border-[var(--gold)]/18 bg-[var(--gold)]/5 px-4 py-2 text-[11px] text-white/40">
         <span className="text-[var(--gold)]">✦</span>
