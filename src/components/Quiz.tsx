@@ -27,7 +27,7 @@ function trackMeta(event: string, params?: Record<string, unknown>) {
 
 const SHEETS_URL =
   (import.meta.env.VITE_SHEETS_URL as string | undefined) ??
-  "https://script.google.com/macros/s/AKfycbwF1ieY6H5AnsiEaNPPnBiG4BXegarNFZiJQKgv8i3UnbHnZDTKVtrhrG4jDoDxpmyOXA/exec";
+  "https://script.google.com/macros/s/AKfycbwhkj_nUXeB3r3LKVX0u8k76XvIVR5S6CyXhEQFI0mlwpmFx3-Y2XkNhV4iUaHztDB1YA/exec";
 
 const WA_NUMBER = (import.meta.env.VITE_WA_NUMBER as string | undefined) ?? "5586922221001";
 const TOTAL_STEPS = 8;
