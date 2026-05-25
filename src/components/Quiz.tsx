@@ -88,8 +88,8 @@ const DURATIONS = ["1 dia","2 dias","3 dias","4 dias","5 dias","6 dias","7 dias"
 const STEP_LABELS = ["Ocasião","Evento","Espaço","Infra","Hospedagem","Investimento","Visita","Dados"];
 
 const INVESTMENT_RANGES = [
-  { id: "ate-15k",    label: "Até R$ 15.000",          desc: "Reuniões e eventos compactos"   },
-  { id: "15k-40k",    label: "R$ 15.000 – R$ 40.000",  desc: "Eventos de pequeno porte"        },
+  { id: "10k-20k",    label: "R$ 10.000 – R$ 20.000",  desc: "Reuniões e eventos compactos"   },
+  { id: "20k-40k",    label: "R$ 20.000 – R$ 40.000",  desc: "Eventos de pequeno porte"        },
   { id: "40k-80k",    label: "R$ 40.000 – R$ 80.000",  desc: "Eventos de médio porte"          },
   { id: "80k-150k",   label: "R$ 80.000 – R$ 150.000", desc: "Grandes eventos e celebrações"   },
   { id: "acima-150k", label: "Acima de R$ 150.000",    desc: "Eventos premium e corporativos"  },
